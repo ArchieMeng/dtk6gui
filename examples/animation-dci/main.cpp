@@ -17,6 +17,7 @@
 #include <QPushButton>
 #include <QHBoxLayout>
 #include <QFileDialog>
+#include <DPlatformHandle>
 
 #include <DDciIcon>
 #include <DDciIconPlayer>
@@ -48,6 +49,7 @@ class IconWidget : public QMainWindow
 public:
     IconWidget(const QString &iconName)
     {
+        setAttribute(Qt::WA_TranslucentBackground);
         setCentralWidget(label = new QLabel(this));
         label->setAcceptDrops(true);
         centralWidget()->setAttribute(Qt::WA_MouseTracking);
@@ -78,12 +80,21 @@ public:
             player.setMode(DDciIcon::Normal);
         });
 
+        auto switchBlur = new QPushButton("blur");
+        connect(switchBlur, &QPushButton::clicked, this, [this] {
+            static DPlatformHandle dPlatformHandle(windowHandle());
+            static bool isBlur = false;
+            dPlatformHandle.setEnableBlurWindow(isBlur);
+            isBlur = !isBlur;
+        });
+
         QWidget *menuWidget = new QWidget(this);
         QHBoxLayout *layout = new QHBoxLayout(menuWidget);
         layout->addWidget(normal);
         layout->addWidget(hover);
         layout->addWidget(pressed);
         layout->addWidget(disabled);
+        layout->addWidget(switchBlur);
         layout->addWidget(open);
         setMenuWidget(menuWidget);
 

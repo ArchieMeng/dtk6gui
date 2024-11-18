@@ -1281,6 +1281,22 @@ void DPlatformHandle::setEnableSystemMove(bool enableSystemMove)
 
 void DPlatformHandle::setEnableBlurWindow(bool enableBlurWindow)
 {
+#ifndef DTK_DISABLE_TREELAND
+    static PersonalizationWindowContext *context = nullptr;
+    if (m_window->handle() && DGuiApplicationHelper::testAttribute(DGuiApplicationHelper::IsTreelandPlatform)) {
+        QtWaylandClient::QWaylandWindow *waylandWindow =
+            static_cast<QtWaylandClient::QWaylandWindow *>(m_window->handle());
+
+        struct wl_surface *surface = waylandWindow->wlSurface();
+        if (surface) {
+            qDebug() << "Setting wayland window blur blend mode";
+            if (context == nullptr)
+                context = new PersonalizationWindowContext(PersonalizationManager::instance()->get_window_context(surface));
+            context->set_blend_mode(enableBlurWindow ? PersonalizationWindowContext::blend_mode_blur : PersonalizationWindowContext::blend_mode_transparent);
+            return;
+        }
+    }
+#endif
     setWindowProperty(m_window, _enableBlurWindow, enableBlurWindow);
 }
 
